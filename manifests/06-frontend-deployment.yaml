@@ -1,66 +1,130 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+    argocd.argoproj.io/tracking-id: taskapp:apps/Deployment:taskapp/frontend
+    deployment.kubernetes.io/revision: "7"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{"argocd.argoproj.io/tracking-id":"taskapp:apps/Deployment:taskapp/frontend"},"name":"frontend","namespace":"taskapp"},"spec":{"replicas":2,"selector":{"matchLabels":{"app":"frontend"}},"strategy":{"rollingUpdate":{"maxSurge":1,"maxUnavailable":0},"type":"RollingUpdate"},"template":{"metadata":{"labels":{"app":"frontend"}},"spec":{"containers":[{"image":"ghcr.io/ts-a-devops/taskapp-frontend@sha256:dcd38b90762f14c88ec2e1a81527986d05cc926ffa8258f48aa9ecd1ed7e87f0","livenessProbe":{"httpGet":{"path":"/healthz","port":80},"initialDelaySeconds":10,"periodSeconds":10,"timeoutSeconds":3},"name":"frontend","ports":[{"containerPort":80}],"readinessProbe":{"httpGet":{"path":"/healthz","port":80},"initialDelaySeconds":3,"periodSeconds":5,"timeoutSeconds":3},"resources":{"limits":{"cpu":"200m","memory":"128Mi"},"requests":{"cpu":"50m","memory":"64Mi"}}}],"topologySpreadConstraints":[{"labelSelector":{"matchLabels":{"app":"frontend"}},"maxSkew":1,"topologyKey":"kubernetes.io/hostname","whenUnsatisfiable":"DoNotSchedule"}]}}}}
+  creationTimestamp: "2026-09-13T19:35:42Z"
+  generation: 8
   name: frontend
   namespace: taskapp
+  resourceVersion: "389740"
+  uid: e65ca981-cdb1-4242-8558-877bddae4c04
 spec:
+  progressDeadlineSeconds: 600
   replicas: 2
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 0
-      maxSurge: 1
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app: frontend
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
   template:
     metadata:
       labels:
         app: frontend
     spec:
-      topologySpreadConstraints:
-        - maxSkew: 1
-          topologyKey: kubernetes.io/hostname
-          whenUnsatisfiable: DoNotSchedule
-          labelSelector:
-            matchLabels:
-              app: frontend
       containers:
-        - name: frontend
-          image: ghcr.io/ts-a-devops/taskapp-frontend@sha256:dcd38b90762f14c88ec2e1a81527986d05cc926ffa8258f48aa9ecd1ed7e87f0
-          ports:
-            - containerPort: 80
-          resources:
-            requests:
-              cpu: "50m"
-              memory: "64Mi"
-            limits:
-              cpu: "200m"
-              memory: "128Mi"
-          readinessProbe:
-            httpGet:
-              path: /healthz
-              port: 80
-            initialDelaySeconds: 3
-            periodSeconds: 5
-            timeoutSeconds: 3
-          livenessProbe:
-            httpGet:
-              path: /healthz
-              port: 80
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            timeoutSeconds: 3
-
+      - image: ghcr.io/ts-a-devops/taskapp-frontend@sha256:dcd38b90762f14c88ec2e1a81527986d05cc926ffa8258f48aa9ecd1ed7e87f0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 3
+        name: frontend
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 3
+        resources:
+          limits:
+            cpu: 200m
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            app: frontend
+        maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+status:
+  availableReplicas: 2
+  conditions:
+  - lastTransitionTime: "2026-09-13T19:35:55Z"
+    lastUpdateTime: "2026-09-13T19:35:55Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2026-09-13T19:35:42Z"
+    lastUpdateTime: "2026-09-13T22:54:31Z"
+    message: ReplicaSet "frontend-5c9476475d" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 8
+  readyReplicas: 2
+  replicas: 2
+  terminatingReplicas: 0
+  updatedReplicas: 2
 ---
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    argocd.argoproj.io/tracking-id: taskapp:/Service:taskapp/frontend
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{"argocd.argoproj.io/tracking-id":"taskapp:/Service:taskapp/frontend"},"name":"frontend","namespace":"taskapp"},"spec":{"ports":[{"port":80,"targetPort":80}],"selector":{"app":"frontend"}}}
+  creationTimestamp: "2026-09-13T19:35:42Z"
   name: frontend
   namespace: taskapp
+  resourceVersion: "389180"
+  uid: 950402e5-1fa7-4036-8c1a-1584cf7ffa18
 spec:
+  clusterIP: 10.43.151.154
+  clusterIPs:
+  - 10.43.151.154
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
   selector:
     app: frontend
-  ports:
-    - port: 80
-      targetPort: 80
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
