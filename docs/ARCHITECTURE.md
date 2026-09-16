@@ -48,3 +48,7 @@ Both layers had to be independently correct — NSG alone was insufficient becau
 - **Backend/Postgres run as explicit numeric UID** (10001, 70): Kubernetes' runAsNonRoot check requires a numeric UID, not a named user, discovered by testing and reading kubelet's actual rejection message.
 - **HPA replicas excluded from GitOps diffing** (ignoreDifferences on backend Deployment): HPA and Argo CD both want ownership of spec.replicas; scoping ignoreDifferences to just that field lets both coexist correctly.
 - **DATABASE_HOST/PORT/NAME/USER/PASSWORD as 5 separate vars, not one DATABASE_URL**: discovered by reading the actual Flask app source (app/__init__.py) rather than assuming a convention.
+
+## Known Limitation — Postgres and Node-Local Storage
+
+The `local-path` storage class provisions node-local disks: Postgres's PVC is physically bound to whichever node it first scheduled on. Draining or losing that specific node makes Postgres unavailable until the node returns — it cannot reschedule elsewhere, unlike the stateless frontend/backend tiers, which do reschedule cleanly (verified live: the frontend stayed up throughout a full node drain that included Postgres's node). The correct production fix is a replicated storage backend (Longhorn, or Azure Disk CSI with a retained/multi-zone PV) so Postgres's data isn't tied to a single physical node. Not implemented here due to time constraints; documented as a known, understood trade-off rather than an oversight.
